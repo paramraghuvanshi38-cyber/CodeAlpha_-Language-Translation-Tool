@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translater | Neural Language Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#8B5CF6',
+                            DEFAULT: '#6D28D9', // Vibrant Violet
+                            dark: '#5B21B6'
+                        },
+                        surface: {
+                            DEFAULT: '#FFFFFF',
+                            hover: '#F8FAFC',
+                            muted: '#F1F5F9'
+                        },
+                        ink: {
+                            DEFAULT: '#0F172A', // Slate 900
+                            light: '#64748B'    // Slate 500
+                        }
+                    },
+                    boxShadow: {
+                        'smooth': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'float': '0 10px 30px -10px rgba(109, 40, 217, 0.2)', // brand shadow
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            /* Slate 50 */
+            color: #0F172A;
+        }
+
+        /* Clean scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        /* Minimal UI classes */
+        .glass-panel {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            /* slate-200 */
+            border-radius: 24px;
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen text-ink flex flex-col font-sans relative overflow-x-hidden selection:bg-brand/20 selection:text-brand-dark">
+
+    <!-- Top Navigation (Floating minimalist mac-like header) -->
+    <header class="w-full relative z-50 pt-6 px-4 sm:px-6 lg:px-8">
+        <div
+            class="max-w-6xl mx-auto flex items-center justify-between bg-white/70 backdrop-blur-md px-6 py-4 rounded-2xl border border-white shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center text-white shadow-float">
+                    <i class="fa-solid fa-language text-sm"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-ink">Translater</h1>
+            </div>
+
+            <a href="#historyContainer"
+                class="text-xs font-semibold uppercase tracking-wider text-ink-light hover:text-brand transition-colors flex items-center gap-1.5 bg-surface-hover px-3 py-1.5 rounded-full">
+                History
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Application Area -->
+    <main class="flex-grow flex flex-col items-center pt-10 pb-20 px-4 sm:px-6 lg:px-8 relative z-10">
+
+        <div class="w-full max-w-6xl mx-auto flex flex-col">
+
+            <!-- Page Header -->
+            <div class="mb-12 text-center max-w-2xl mx-auto">
+                <h2 class="text-5xl font-extrabold text-ink tracking-tight mb-4">Break the barrier</h2>
+                <p class="text-ink-light text-lg font-medium">Fast, accurate neural translations within a completely
+                    frictionless interface.</p>
+            </div>
+
+            <!-- Translation Application Grid -->
+            <div class="w-full relative">
+
+                <!-- Main Split Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 relative">
+
+                    <!-- ================= SOURCE PANEL (LEFT) ================= -->
+                    <div
+                        class="glass-panel flex flex-col relative group transition-shadow duration-300 hover:shadow-smooth hover:border-brand/20 min-h-[300px]">
+
+                        <!-- Top Bar (Language Select & Actions) -->
+                        <div
+                            class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-surface/50 rounded-t-3xl">
+                            <div class="relative">
+                                <select id="sourceLang"
+                                    class="appearance-none bg-transparent text-sm sm:text-base font-semibold text-ink outline-none cursor-pointer py-1.5 pl-2 pr-8 rounded-lg hover:bg-surface-muted transition-colors border border-transparent focus:border-slate-200">
+                                    <option value="auto" selected>Auto-detect</option>
+                                    <option value="en">English (US)</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="zh">Chinese</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="ru">Russian</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="ko">Korean</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-brand">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <button
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-ink-light hover:text-brand hover:bg-brand/5 transition-colors"
+                                    title="Voice Input">
+                                    <i class="fa-solid fa-microphone"></i>
+                                </button>
+                                <button
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-ink-light hover:text-brand hover:bg-brand/5 transition-colors"
+                                    title="Upload File">
+                                    <i class="fa-solid fa-file-arrow-up"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Typing Area -->
+                        <div class="relative p-6 flex flex-col flex-grow">
+                            <textarea id="sourceText"
+                                class="w-full h-full min-h-[160px] outline-none text-xl lg:text-3xl text-ink font-medium placeholder-slate-300 bg-transparent resize-none leading-relaxed tracking-tight"
+                                placeholder="Start typing..." spellcheck="false"></textarea>
+
+                            <!-- Bottom Action Bar -->
+                            <div class="mt-4 flex justify-between items-center absolute bottom-4 left-6 right-6">
+                                <button id="clearBtn"
+                                    class="w-8 h-8 rounded-full flex items-center justify-center bg-surface-muted text-ink-light hover:text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                                    title="Clear text">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                                <span class="text-xs font-semibold text-slate-400" id="charCount">0 / 5000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= TARGET PANEL (RIGHT) ================= -->
+                    <div
+                        class="glass-panel flex flex-col relative bg-surface-hover transition-shadow duration-300 hover:shadow-smooth hover:border-brand/20 min-h-[300px]">
+
+                        <!-- Top Bar (Language Select & Actions) -->
+                        <div
+                            class="px-5 py-4 border-b border-slate-100 flex items-center justify-between rounded-t-3xl">
+                            <div class="relative">
+                                <select id="targetLang"
+                                    class="appearance-none bg-transparent text-sm sm:text-base font-semibold text-brand outline-none cursor-pointer py-1.5 pl-2 pr-8 rounded-lg hover:bg-brand/5 transition-colors border border-transparent focus:border-slate-200">
+                                    <option value="en">English (US)</option>
+                                    <option value="es" selected>Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="zh">Chinese</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="ru">Russian</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="ko">Korean</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-brand">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <!-- Minimal Auto-Translate Toggle -->
+                                <div class="flex items-center gap-2 pr-3 border-r border-slate-200">
+                                    <span
+                                        class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Auto</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="autoTranslateToggle" class="sr-only peer">
+                                        <div
+                                            class="w-7 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand">
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <button
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-ink-light hover:text-brand hover:bg-brand/5 transition-colors"
+                                    title="Listen">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                                <button
+                                    class="h-8 px-3 rounded-lg flex items-center gap-1.5 text-ink-light hover:text-brand hover:bg-brand/5 transition-colors border border-transparent font-semibold text-xs"
+                                    title="Copy">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Read-only Area -->
+                        <div class="relative p-6 flex flex-col flex-grow">
+                            <textarea id="targetText"
+                                class="w-full h-full min-h-[160px] outline-none text-xl lg:text-3xl text-ink font-medium bg-transparent resize-none leading-relaxed tracking-tight"
+                                placeholder="Translation" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Swap Button -->
+                <div class="absolute left-1/2 top-[84px] md:top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                    <button
+                        class="bg-white border text-ink-light border-slate-200 rounded-full w-12 h-12 shadow-smooth hover:text-brand hover:border-brand/30 hover:scale-105 transition-all duration-300 group flex items-center justify-center rotate-90 md:rotate-0"
+                        title="Swap languages">
+                        <i
+                            class="fa-solid fa-arrow-right-arrow-left group-hover:rotate-180 transition-transform duration-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Translate Action Area -->
+            <div class="mt-8 flex justify-center w-full z-20">
+                <button id="translateBtn"
+                    class="group px-8 md:px-12 py-4 bg-brand text-white font-bold rounded-full shadow-float hover:bg-brand-dark hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3 w-full sm:w-auto justify-center text-lg tracking-wide border border-white/10">
+                    <span class="relative z-10 w-full text-center">Translate Now</span>
+                    <i class="fa-solid fa-arrow-right ml-2 text-sm group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+
+            <!-- Translation History Section -->
+            <div class="mt-4 mb-12 w-full max-w-4xl mx-auto">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-ink-light">Recent Activity</h3>
+                    <button id="clearHistoryBtn"
+                        class="text-xs font-bold uppercase tracking-wider text-ink-light hover:text-brand transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-brand/10">
+                        <i class="fa-solid fa-eraser"></i> Clear
+                    </button>
+                </div>
+                <!-- History Cards Container -->
+                <div id="historyContainer" class="flex flex-col gap-3">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-8">
+        <div
+            class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-ink-light/70 text-sm font-medium">
+            <p>&copy; 2026 Translater. Minimalist Language Parsing.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-brand transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
+                <a href="#" class="hover:text-brand transition-colors"><i class="fa-brands fa-twitter text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Vanilla JavaScript for basic UI interactivity -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sourceText = document.getElementById('sourceText');
+            const targetText = document.getElementById('targetText');
+            const charCount = document.getElementById('charCount');
+            const clearBtn = document.getElementById('clearBtn');
+            const header = document.getElementById('header');
+            const translateBtn = document.getElementById('translateBtn');
+            const sourceLang = document.getElementById('sourceLang');
+            const targetLang = document.getElementById('targetLang');
+            const historyContainer = document.getElementById('historyContainer');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+            // --- History Logic ---
+            const loadHistory = () => {
+                if (!historyContainer) return;
+                historyContainer.innerHTML = '';
+                const history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+                if (history.length === 0) {
+                    historyContainer.innerHTML = '<div class="text-center py-6 text-ink-light text-sm font-medium">No recent translations.</div>';
+                    return;
+                }
+
+                // Display last 5 items
+                const displayHistory = history.slice(0, 5);
+                displayHistory.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel p-4 cursor-pointer hover:border-brand/30 hover:shadow-float transition-all duration-300 flex flex-col sm:flex-row sm:items-center gap-4 group';
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 shrink-0 sm:w-24">
+                            <span>${item.sourceLang}</span>
+                            <i class="fa-solid fa-arrow-right text-brand"></i>
+                            <span class="text-brand">${item.targetLang}</span>
+                        </div>
+                        <div class="flex-grow flex flex-col sm:flex-row gap-2 sm:gap-6 lg:gap-8 overflow-hidden">
+                            <p class="text-ink-light text-sm font-medium line-clamp-1 flex-1" title="${item.sourceText}">${item.sourceText}</p>
+                            <p class="text-ink font-semibold text-sm line-clamp-1 flex-1" title="${item.translatedText}">${item.translatedText}</p>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                            <i class="fa-solid fa-chevron-right text-brand/50 text-xs text-sm"></i>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => {
+                        sourceLang.value = item.sourceLang;
+                        targetLang.value = item.targetLang;
+                        sourceText.value = item.sourceText;
+                        targetText.value = item.translatedText;
+                        sourceText.dispatchEvent(new Event('input')); // update char count
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    historyContainer.appendChild(card);
+                });
+            };
+
+            const saveTranslationToHistory = (sourceText, translatedText, sourceLang, targetLang) => {
+                let history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+
+                // Avoid duplicating the exact same translation in a row
+                if (history.length > 0 && history[0].sourceText === sourceText && history[0].targetLang === targetLang) {
+                    return; // Skip duplicate
+                }
+
+                const newItem = {
+                    sourceText,
+                    translatedText,
+                    sourceLang,
+                    targetLang,
+                    timestamp: new Date().toISOString()
+                };
+
+                history.unshift(newItem); // Add to beginning
+                history = history.slice(0, 10); // Keep max 10
+                localStorage.setItem('translationHistory', JSON.stringify(history));
+
+                loadHistory(); // Refresh UI
+            };
+
+            if (clearHistoryBtn) {
+                clearHistoryBtn.addEventListener('click', () => {
+                    localStorage.removeItem('translationHistory');
+                    loadHistory();
+                    showToast("History cleared.");
+                });
+            }
+
+            // Initial load
+            loadHistory();
+
+            // Create Toast Notification Element
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 transform translate-y-24 opacity-0 transition-all duration-500 z-[100] flex items-center gap-3 bg-white/90 backdrop-blur-xl border border-rose-200 shadow-[0_10px_40px_rgba(225,29,72,0.15)] px-5 py-3.5 rounded-2xl text-slate-700';
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
+                    <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm text-slate-800">Oops!</span>
+                    <span class="text-sm font-medium" id="toastMessage"></span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            let toastTimeout;
+            const showToast = (message) => {
+                const toastMsgElement = document.getElementById('toastMessage');
+                toastMsgElement.textContent = message;
+
+                // Animate in
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+
+                // Auto hide
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-24', 'opacity-0');
+                }, 3500);
+            };
+
+            // Error visualization function (Tech Minimalist version)
+            const showErrorState = () => {
+                const sourceContainer = sourceText.parentElement.parentElement;
+                sourceContainer.classList.add('border-rose-400', 'shadow-[0_0_0_2px_rgba(251,113,133,0.2)]');
+                setTimeout(() => {
+                    sourceContainer.classList.remove('border-rose-400', 'shadow-[0_0_0_2px_rgba(251,113,133,0.2)]');
+                }, 1500);
+            };
+
+            // Translation API Logic
+            translateBtn.addEventListener('click', async () => {
+                const textToTranslate = sourceText.value.trim();
+
+                // Error Handling: Empty Text
+                if (!textToTranslate) {
+                    showErrorState();
+                    showToast("Please enter some text to translate.");
+                    return;
+                }
+
+                // Add loading state
+                const originalBtnContent = translateBtn.innerHTML;
+                translateBtn.innerHTML = '<div class="absolute inset-0 bg-gradient-to-r from-neon-purple via-indigo-500 to-neon-blue opacity-100 blur-[2px]"></div><div class="absolute inset-0 bg-gradient-to-br from-neon-purple to-neon-blue z-0"></div><i class="fa-solid fa-circle-notch fa-spin text-white relative z-10 text-xl"></i><span class="ml-3 relative z-10 tracking-wide">Translating...</span>';
+                translateBtn.disabled = true;
+                translateBtn.classList.add('opacity-90', 'cursor-not-allowed', 'scale-95');
+
+                try {
+                    const sl = sourceLang.value;
+                    const tl = targetLang.value;
+
+                    // Using free Google Translate API endpoint
+                    const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(textToTranslate)}`;
+
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+
+                    const data = await response.json();
+
+                    if (data && data[0]) {
+                        const translatedText = data[0].map(item => item[0]).join('');
+                        targetText.value = translatedText;
+
+                        // Save successfully translated text to localStorage history
+                        saveTranslationToHistory(textToTranslate, translatedText, sl, tl);
+                    } else {
+                        throw new Error('Invalid translation data received');
+                    }
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    // Error Handling: API Failure
+                    showToast("Translation failed. Please try again later.");
+                    targetText.value = ''; // clear any partial/old text on failure
+                } finally {
+                    // Restore button state
+                    translateBtn.innerHTML = originalBtnContent;
+                    translateBtn.disabled = false;
+                    translateBtn.classList.remove('opacity-90', 'cursor-not-allowed', 'scale-95');
+                }
+            });
+
+            // Swap Languages functionality
+            const swapBtns = document.querySelectorAll('button[title="Swap languages"]');
+            swapBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const currentSourceLang = sourceLang.value;
+                    const currentTargetLang = targetLang.value;
+
+                    // Support swapping only if source is not 'auto', since target cannot be 'auto'
+                    if (currentSourceLang !== 'auto') {
+                        sourceLang.value = currentTargetLang;
+                        targetLang.value = currentSourceLang;
+                    } else {
+                        sourceLang.value = currentTargetLang;
+                        targetLang.value = 'en';
+                    }
+
+                    // Swap texts
+                    const currentTargetText = targetText.value;
+                    if (currentTargetText) {
+                        sourceText.value = currentTargetText;
+                        targetText.value = '';
+                        sourceText.dispatchEvent(new Event('input'));
+                    }
+                });
+            });
+
+            // Auto-Translate elements
+            const autoTranslateToggle = document.getElementById('autoTranslateToggle');
+            let debounceTimer;
+
+            // Trigger translation function
+            const triggerTranslation = () => {
+                // Manually trigger the click event on the translate button
+                // so we don't duplicate the complex loading/error handling logic
+                translateBtn.click();
+            };
+
+            // Text-to-Speech (TTS) Functionality
+            // Map short ISO codes to BCP-47 locales for better native voices
+            const localeMap = {
+                'en': 'en-US',
+                'es': 'es-ES',
+                'fr': 'fr-FR',
+                'de': 'de-DE',
+                'zh': 'zh-CN',
+                'hi': 'hi-IN',
+                'ar': 'ar-SA',
+                'pt': 'pt-BR',
+                'ru': 'ru-RU',
+                'ja': 'ja-JP',
+                'ko': 'ko-KR'
+            };
+
+            const speakText = (text, lang) => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+
+                    if (!text.trim()) {
+                        showToast("Nothing to read aloud.");
+                        return;
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    // Assign the mapped locale if available, else fallback
+                    let ttsLang = navigator.language;
+                    if (lang !== 'auto') {
+                        ttsLang = localeMap[lang] || lang;
+                    }
+                    utterance.lang = ttsLang;
+
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    showToast("Text-to-speech is not supported in your browser.");
+                }
+            };
+
+            // Source Panel Listen Button
+            const sourceListenBtn = document.querySelector('button[title="Voice Input"]'); // Originally intended as Mic, reusing for Listen for parity or swap icon logic
+            // Update the icon to match the target panel (volume instead of mic) for this implementation
+            if (sourceListenBtn) {
+                sourceListenBtn.setAttribute('title', 'Listen to Source Text');
+                sourceListenBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                sourceListenBtn.addEventListener('click', () => {
+                    speakText(sourceText.value, sourceLang.value);
+                });
+            }
+
+            // Target Panel Listen Button
+            const targetListenBtn = document.querySelector('button[title="Listen to Translation"]');
+            if (targetListenBtn) {
+                targetListenBtn.addEventListener('click', () => {
+                    speakText(targetText.value, targetLang.value);
+                });
+            }
+
+            // Copy to Clipboard Functionality
+            const copyBtn = document.querySelector('button[title="Copy Translation"]');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async () => {
+                    const textToCopy = targetText.value;
+                    if (!textToCopy) {
+                        showToast("Nothing to copy.");
+                        return;
+                    }
+
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+
+                        // Visual feedback
+                        const originalHtml = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fa-solid fa-check text-green-400"></i><span class="text-sm font-semibold hidden sm:block text-green-400">Copied!</span>';
+                        copyBtn.classList.add('border-green-400/50', 'bg-white/[0.05]');
+
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalHtml;
+                            copyBtn.classList.remove('border-green-400/50', 'bg-white/[0.05]');
+                        }, 2000);
+
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        showToast("Failed to copy to clipboard.");
+                    }
+                });
+            }
+
+            // Header scroll effect
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 10) {
+                    header.classList.add('shadow-md');
+                } else {
+                    header.classList.remove('shadow-md');
+                }
+            });
+
+            // Character count, Clear button, and Auto-Translate Debounce
+            sourceText.addEventListener('input', function () {
+                const length = this.value.length;
+                charCount.textContent = `${length} / 5000`;
+
+                // Toggle clear button
+                if (length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+
+                // Color warning near limit
+                if (length > 4900) {
+                    charCount.classList.add('text-rose-500');
+                    charCount.classList.remove('text-slate-400');
+                } else {
+                    charCount.classList.remove('text-rose-500');
+                    charCount.classList.add('text-slate-400');
+                }
+
+                // Auto-Translate Debounce Logic (Wait 1 second)
+                if (autoTranslateToggle && autoTranslateToggle.checked) {
+                    clearTimeout(debounceTimer);
+                    if (length > 0) {
+                        debounceTimer = setTimeout(() => {
+                            triggerTranslation();
+                        }, 1000);
+                    }
+                }
+            });
+
+            // Clear button functionality
+            clearBtn.addEventListener('click', () => {
+                sourceText.value = '';
+                targetText.value = '';
+                sourceText.focus();
+                // trigger input event to reset counter
+                sourceText.dispatchEvent(new Event('input'));
+            });
+
+            // Focus styling on containers
+            const sourcePanel = sourceText.closest('.flex-col');
+            const targetPanel = targetText.closest('.flex-col');
+
+            sourceText.addEventListener('focus', () => {
+                sourceText.closest('.bg-white').classList.add('ring-2', 'ring-indigo-500/20');
+            });
+            sourceText.addEventListener('blur', () => {
+                sourceText.closest('.bg-white').classList.remove('ring-2', 'ring-indigo-500/20');
+            });
+        });
+    </script>
+</body>
+
+</html>
